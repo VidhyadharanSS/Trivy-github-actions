@@ -7,6 +7,9 @@ on:
   pull_request:
 
 
+permissions:
+  contents: write
+
 jobs:
   trivy-scan:
     runs-on: ubuntu-latest
@@ -35,4 +38,4 @@ jobs:
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git add reports/
         git commit -m "Add Trivy scan report [skip ci]" || echo "No changes to commit"
-        git push origin HEAD:main
+        git push
