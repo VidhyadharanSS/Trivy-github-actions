@@ -20,12 +20,13 @@ jobs:
     - name: Install Trivy
       run: |
         curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-        sudo mv trivy /usr/local/bin/
+        sudo mv ./bin/trivy /usr/local/bin/trivy
 
     - name: Run Trivy scan
       run: |
         mkdir -p reports
-        trivy image --format template --template "@/html.tpl" \
+        trivy image --format template \
+          --template "@contrib/html.tpl" \
           -o reports/trivy-report-$(date +%F-%H%M).html debian:bookworm
 
     - name: Commit and Push Report
