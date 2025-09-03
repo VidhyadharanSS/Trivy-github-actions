@@ -25,8 +25,8 @@ jobs:
     - name: Run Trivy scan
       run: |
         mkdir -p reports
-        trivy image --format template \
-          --template "@contrib/html.tpl" \
+        curl -sSL -o html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
+        trivy image --format template --template "@html.tpl" \
           -o reports/trivy-report-$(date +%F-%H%M).html debian:bookworm
 
     - name: Commit and Push Report
