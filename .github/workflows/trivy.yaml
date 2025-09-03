@@ -2,36 +2,36 @@ name: Trivy Scan
 
 on:
   push:
-    branches: [ "main" ] # Runs on push
-  pull_request: # Runs on PRs too
-  workflow_dispatch:
-    # Allow manual trigger
+    branches:
+    - main
+  pull_request:
+
 
 jobs:
-  scan:
+  trivy-scan:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-    # Install Trivy
     - name: Install Trivy
       run: |
-        sudo apt-get update
-        sudo apt-get install -y wget
-        wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.56.2_Linux-64bit.deb
-        sudo dpkg -i trivy_0.56.2_Linux-64bit.deb
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+        sudo mv trivy /usr/local/bin/
 
-    # Run Trivy scan on debian:bookworm (you can change image later)
-    - name: Run Trivy Scan
+    - name: Run Trivy scan
       run: |
-        trivy image --format template --template "@contrib/html.tpl" \
-        -o trivy-report.html debian:bookworm
+        mkdir -p reports
+        trivy image --format template --template "@/html.tpl" \
+          -o reports/trivy-report-$(date +%F-%H%M).html debian:bookworm
 
-    # Upload report as artifact
-    - name: Upload Trivy Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: trivy-report
-        path: trivy-report.html
+    - name: Commit and Push Report
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add reports/
+        git commit -m "Add Trivy scan report [skip ci]" || echo "No changes to commit"
+        git push origin HEAD:main
